@@ -1,118 +1,298 @@
-# Injaz (إنجاز)
+# Portfolio Website with Admin Panel
 
-**Injaz** is a modern, production‑oriented developer portfolio showcasing real‑world applications built with **Laravel** and **React**. The project demonstrates secure authentication, real‑time communication, scalable API design, and clean architecture.
+A modern, production-ready portfolio website built with **Laravel** (backend API) and **React** (frontend). Features a beautiful public portfolio page and a full-featured admin panel for content management.
+
+![Portfolio Preview](https://via.placeholder.com/1200x600/667eea/ffffff?text=Portfolio+Website+Preview)
 
 ---
 
 ## 🚀 Tech Stack
 
-**Backend**
-- Laravel (latest)
-- Laravel Sanctum (SPA authentication)
-- Laravel Passport (OAuth2 for public/external APIs)
-- MySQL / PostgreSQL
-- Redis (cache & queues)
-- WebSockets (Reverb / Pusher)
+### Backend
+- **Laravel 10** - PHP framework
+- **MySQL** - Database
+- **RESTful API** - JSON responses
 
-**Frontend**
-- React (Vite)
-- Axios
-- Tailwind CSS
+### Frontend
+- **React 18** - UI library
+- **Vite** - Build tool
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
 
 ---
 
-## ✨ Core Features
+## ✨ Features
 
-### 🔐 Authentication & Security
-- SPA authentication using **Sanctum**
-- OAuth2 authentication using **Passport**
-- Role & permission based access control
-- API rate limiting and request validation
+### Public Portfolio Page
+- 🌙 **Dark/Light Mode** - Toggle between themes
+- 📱 **Responsive Design** - Works on all devices
+- ✨ **Animations** - Smooth fade-in and slide-up effects
+- 📄 **Download CV** - Resume download button in navbar
 
-### 📁 Project & Task Management
-- Full CRUD for projects and tasks
-- Policy‑based authorization
-- Pagination, filtering, and search
-- Soft deletes and activity tracking
+### Sections
+- Hero with avatar and social links
+- Stats (Years Experience, Projects, Clients)
+- Education & Certifications
+- Achievements & Awards
+- Skills with categories (Backend, Database, Frontend, DevOps)
+- AI Tools I Use
+- Featured Projects
+- Leadership & Volunteer Experience
+- Publications & Profiles
+- IDEs & Tools
+- Contact Section
 
-### 💬 Real‑Time Communication
-- One‑to‑one and group chat
-- Online/offline user presence
-- Typing indicators
-- Real‑time notifications
-
-### 🎙️ Voice Messaging
-- Audio recording from frontend
-- Secure upload and storage
-- Playback inside chat
-
-### ⚙️ Performance & Scalability
-- Background jobs and queues
-- Event‑driven architecture
-- Caching for frequently accessed data
-- Optimized API responses using Resources
-
-### 🧱 Clean Architecture
-- Modular folder structure
-- Service & repository layers
-- Thin controllers, reusable business logic
+### Admin Panel
+- 📝 **Full CRUD** - Create, Read, Update, Delete for all content
+- 🖼️ **Image Upload** - Modern drag & drop with gallery
+- 📊 **Pagination** - 10 items per page
+- 💾 **Auto-save** - Changes persist to database
+- ✅ **Validation** - File type and size validation
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Database Schema (ERD)
 
 ```
-React (SPA)
-  │
-  ├── Sanctum (Cookie Auth)
-  │    └── /api/internal/*
-  │
-  └── Passport (OAuth2)
-       └── /api/v1/public/*
+┌─────────────────┐     ┌─────────────────┐
+│    profiles     │     │     skills      │
+├─────────────────┤     ├─────────────────┤
+│ id              │     │ id              │
+│ name            │     │ name            │
+│ title           │     │ category        │
+│ bio             │     │ level           │
+│ email           │     │ order           │
+│ phone           │     └─────────────────┘
+│ location        │
+│ avatar          │     ┌─────────────────┐
+│ github          │     │    projects      │
+│ linkedin        │     ├─────────────────┤
+│ twitter         │     │ id              │
+│ resume_url      │     │ title           │
+│ years_exp       │     │ description      │
+│ happy_clients   │     │ image           │
+└─────────────────┘     │ url             │
+                       │ github          │
+┌─────────────────┐     │ order           │
+│  experiences    │     │ is_visible      │
+├─────────────────┤     └─────────────────┘
+│ id              │
+│ company         │     ┌─────────────────┐
+│ position        │     │   education      │
+│ start_date      │     ├─────────────────┤
+│ end_date        │     │ id              │
+│ is_current      │     │ degree          │
+│ description     │     │ institution     │
+│ order           │     │ result          │
+└─────────────────┘     │ year            │
+                       │ order           │
+┌─────────────────┐     └─────────────────┘
+│  achievements   │
+├─────────────────┤     ┌─────────────────┐
+│ id              │     │  leaderships    │
+│ title           │     ├─────────────────┤
+│ description     │     │ id              │
+│ category        │     │ title           │
+│ order           │     │ organization    │
+└─────────────────┘     │ description     │
+                       │ order           │
+┌─────────────────┐     └─────────────────┘
+│ publications    │
+├─────────────────┤     ┌─────────────────┐
+│ id              │     │    ai_tools     │
+│ title           │     ├─────────────────┤
+│ url             │     │ id              │
+│ type            │     │ name            │
+│ order           │     │ description     │
+└─────────────────┘     │ url             │
+                       │ order           │
+┌─────────────────┐     └─────────────────┘
+│      ides      │
+├─────────────────┤
+│ id              │
+│ name            │
+│ description     │
+│ icon            │
+│ order           │
+└─────────────────┘
 ```
 
-- **Sanctum** handles internal SPA authentication
-- **Passport** secures public and third‑party APIs using OAuth2
-
 ---
 
-## 📦 Repository Structure
+## 📦 Installation
 
-```
-app/
- ├── Modules/
- ├── Services/
- ├── Repositories/
- ├── Events/
- ├── Jobs/
- ├── Policies/
- └── Notifications/
+### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd injaz-portfolio
 ```
 
-This structure ensures scalability, maintainability, and testability.
+### 2. Install PHP dependencies
+```bash
+composer install
+```
+
+### 3. Install Node.js dependencies
+```bash
+npm install
+```
+
+### 4. Environment Setup
+```bash
+cp .env.example .env
+```
+
+Update `.env` with your database credentials:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=injaz_portfolio
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 5. Generate application key
+```bash
+php artisan key:generate
+```
+
+### 6. Run migrations
+```bash
+php artisan migrate
+```
+
+### 7. Seed database with sample data
+```bash
+php artisan db:seed --class=PortfolioSeeder
+```
+
+### 8. Create storage link
+```bash
+php artisan storage:link
+```
+
+### 9. Build frontend
+```bash
+npm run build
+```
+
+### 10. Start the server
+```bash
+php artisan serve
+```
 
 ---
 
-## 🧪 Testing (Optional / In Progress)
-- Feature tests for APIs
-- Authentication & authorization tests
-- Queue and job testing
+## 🔗 API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/all` | Get all portfolio data |
+| GET | `/api/profile` | Get profile info |
+| PUT | `/api/profile` | Update profile |
+| GET | `/api/skills` | Get all skills |
+| POST | `/api/skills` | Create skill |
+| PUT | `/api/skills/{id}` | Update skill |
+| DELETE | `/api/skills/{id}` | Delete skill |
+| GET | `/api/projects` | Get all projects |
+| POST | `/api/projects` | Create project |
+| PUT | `/api/projects/{id}` | Update project |
+| DELETE | `/api/projects/{id}` | Delete project |
+| POST | `/api/upload` | Upload image |
+| GET | `/api/images` | Get all uploaded images |
 
 ---
 
-## 📌 Why Injaz?
+## 📱 Usage
 
-> *Injaz* means **achievement** — this project represents my hands‑on experience building production‑ready systems using Laravel and React.
+### Public Portfolio
+- **URL**: `http://localhost:8000/`
+- Features dark/light mode toggle
+- Responsive design for all devices
 
-It is designed not as a demo, but as a **real‑world SaaS‑style application**.
+### Admin Panel
+- **URL**: `http://localhost:8000/admin`
+- Manage all portfolio content
+- Upload images
+- Edit profile information
 
 ---
 
-## 🎤 Interview Summary (Short)
+## 📁 Project Structure
 
-> “Injaz is my professional Laravel and React portfolio showcasing real‑time communication, OAuth authentication using Passport, SPA security with Sanctum, and clean, scalable architecture.”
+```
+├── app/
+│   ├── Http/Controllers/    # API Controllers
+│   └── Models/             # Eloquent Models
+├── database/
+│   ├── migrations/         # Database Migrations
+│   └── seeders/           # Sample Data
+├── resources/
+│   ├── js/                # React Components
+│   │   ├── pages/        # Page Components
+│   │   └── MainApp.jsx  # Main App
+│   └── css/               # Stylesheets
+├── routes/
+│   └── api.php           # API Routes
+└── public/
+    └── build/            # Compiled Assets
+```
+
+---
+
+## 🖼️ Screenshots
+
+### Portfolio Page (Light Mode)
+![Portfolio Light](https://via.placeholder.com/1200x600/667eea/ffffff?text=Portfolio+Light+Mode)
+
+### Portfolio Page (Dark Mode)
+![Portfolio Dark](https://via.placeholder.com/1200x600/1e293b/ffffff?text=Portfolio+Dark+Mode)
+
+### Admin Panel - Profile
+![Admin Profile](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Admin+Panel+Profile)
+
+### Admin Panel - Projects
+![Admin Projects](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Admin+Panel+Projects)
+
+### Admin Panel - Image Upload
+![Admin Upload](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Image+Upload+Feature)
+
+---
+
+## 🔧 Customization
+
+### Adding New Sections
+1. Create migration: `php artisan make:migration create_{table}_table`
+2. Create model: `app/Models/{Model}.php`
+3. Add API routes: `routes/api.php`
+4. Add CRUD functions in `ApiController.php`
+5. Update React components in `resources/js/pages/`
+6. Run migration: `php artisan migrate`
+
+### Styling
+- Edit `resources/css/app.css` for custom styles
+- Use CSS variables for theming
+- Dark mode uses `[data-theme="dark"]` selector
 
 ---
 
 ## 📄 License
+
 This project is for portfolio and learning purposes.
+
+---
+
+## 👨‍💻 Author
+
+**Moshiur Rahman**
+- Full Stack Developer
+- Laravel & React Specialist
+
+---
+
+## 🙏 Acknowledgments
+
+- [Laravel](https://laravel.com)
+- [React](https://react.dev)
+- [Vite](https://vitejs.dev)
