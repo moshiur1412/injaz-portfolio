@@ -12,6 +12,7 @@ use App\Models\Leadership;
 use App\Models\Publication;
 use App\Models\AITool;
 use App\Models\IDE;
+use App\Models\Section;
 use Illuminate\Http\Request;
 
 class ApiController extends Controller
@@ -50,6 +51,11 @@ class ApiController extends Controller
             'ai_tools' => AITool::orderBy('order')->get(),
             'ides' => IDE::orderBy('order')->get(),
         ]);
+    }
+
+    public function sections()
+    {
+        return Section::orderBy('order')->get();
     }
 
     public function updateProfile(Request $request)

@@ -101,6 +101,23 @@ body {
     color: var(--primary);
 }
 
+.nav-link.active {
+    color: var(--primary);
+    font-weight: 700;
+    position: relative;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
 .theme-toggle {
     background: var(--bg-alt);
     border: 1px solid var(--border);
@@ -1120,14 +1137,33 @@ body {
     color: #fff;
 }
 
-.message {
+.toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.toast-message {
     background: #10b981;
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    animation: fadeIn 0.3s;
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    animation: toastSlideUp 0.35s ease forwards;
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+    pointer-events: auto;
+    max-width: 400px;
+}
+
+@keyframes toastSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .admin-tabs {
@@ -1570,4 +1606,382 @@ body {
     .admin-table td {
         padding: 0.5rem;
     }
+}
+
+/* ==================== LOGIN PAGE ==================== */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem;
+}
+
+.login-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 420px;
+}
+
+[data-theme="dark"] .login-card {
+    background: #16213e;
+}
+
+.login-card h1 {
+    font-size: 1.75rem;
+    color: #1a1a2e;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+[data-theme="dark"] .login-card h1 {
+    color: #fff;
+}
+
+.login-error {
+    background: #fef2f2;
+    color: #ef4444;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    border: 1px solid #fecaca;
+}
+
+[data-theme="dark"] .login-error {
+    background: #2d1b1b;
+    border-color: #4a2525;
+}
+
+/* ==================== LOGOUT BUTTON ==================== */
+.btn-logout {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-logout:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.btn-logout-admin {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-logout-admin:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.admin-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ==================== SETTINGS PANEL ==================== */
+.settings-panel {
+    max-width: 800px;
+}
+
+.settings-section {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+[data-theme="dark"] .settings-section {
+    border-color: #2d3748;
+}
+
+.settings-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.settings-section h2 {
+    font-size: 1.5rem;
+    color: #1a1a2e;
+    margin-bottom: 0.5rem;
+}
+
+[data-theme="dark"] .settings-section h2 {
+    color: #fff;
+}
+
+.settings-desc {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.sections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+[data-theme="dark"] .section-item {
+    background: #1a1a2e;
+    border-color: #2d3748;
+}
+
+.section-item:hover {
+    border-color: #667eea;
+}
+
+.section-item-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.section-item-left input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #667eea;
+}
+
+.section-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.section-label-input {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    width: 200px;
+    transition: all 0.2s;
+}
+
+[data-theme="dark"] .section-label-input {
+    color: #fff;
+}
+
+.section-label-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+}
+
+[data-theme="dark"] .section-label-input:focus {
+    background: #1a1a2e;
+}
+
+.section-key {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    padding-left: 0.5rem;
+}
+
+.section-item-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-item-right label {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.section-order-input {
+    width: 60px;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.9rem;
+    background: white;
+    color: #1a1a2e;
+}
+
+[data-theme="dark"] .section-order-input {
+    background: #1a1a2e;
+    border-color: #2d3748;
+    color: #fff;
+}
+
+.section-order-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-save-sections {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.875rem 2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-save-sections:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-save-sections:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ==================== SECTIONS MANAGER ==================== */
+.sections-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.sections-header h2 {
+    margin-bottom: 0;
+}
+
+.btn-add-section {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.btn-add-section:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.new-section-form {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 2px solid #e2e8f0;
+}
+
+[data-theme="dark"] .new-section-form {
+    background: #1a1a2e;
+    border-color: #2d3748;
+}
+
+.new-section-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.new-section-form button {
+    margin-top: 0.5rem;
+}
+
+.section-drag-handle {
+    cursor: grab;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    padding: 0 0.5rem;
+    user-select: none;
+    line-height: 1;
+}
+
+.section-item.dragging {
+    opacity: 0.5;
+    border-style: dashed;
+    border-color: #667eea;
+}
+
+.section-item.dragging .section-drag-handle {
+    cursor: grabbing;
+}
+
+.section-order-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.btn-delete-section {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-delete-section:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+[data-theme="dark"] .btn-delete-section {
+    border-color: #2d3748;
+    color: #64748b;
+}
+
+[data-theme="dark"] .btn-delete-section:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
 }

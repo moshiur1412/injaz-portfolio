@@ -1,54 +1,220 @@
 # Portfolio Website with Admin Panel
 
-A full-stack portfolio website with an admin content management system, built with **Laravel 9** (backend API) and **React 18** (frontend).
+A full-stack portfolio content management system built with **Laravel 9** (RESTful API) and **React 18** (SPA frontend). Features a dynamic public portfolio page with configurable sections, smart nav menu with scroll-based active state, and a secure admin panel for managing all content.
 
 ---
 
-## Tech Stack
+## Architecture Overview
 
-### Backend
-- **Laravel 9** — PHP framework with RESTful API
-- **MySQL** — Relational database
-- **Sanctum** — API authentication
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           CLIENT (Browser)                               │
+│                                                                          │
+│  ┌──────────────────────┐          ┌──────────────────────────────────┐  │
+│  │   Portfolio Page      │          │        Admin Panel (SPA)         │  │
+│  │   - Dynamic sections  │          │   - Profile / Skills / Projects  │  │
+│  │   - Light/Dark mode   │ ◄──────► │   - Auth (Sanctum token)        │  │
+│  │   - Responsive UI     │          │   - Sections Manager (drag-drop)│  │
+│  └──────────────────────┘          │   - Image Upload / Gallery       │  │
+│                                    │   - Change Password              │  │
+│                                    └──────────────────────────────────┘  │
+└──────────────────────────┬───────────────────────────────────────────────┘
+                           │ REST API (JSON)
+                           ▼
+┌──────────────────────────────────────────────────────────────────────────┐
+│                         LARAVEL BACKEND                                  │
+│                                                                          │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────────────┐   │
+│  │ Auth Routes │  │ Public     │  │ Admin      │  │  Middleware       │   │
+│  │ /api/login │  │ Routes     │  │ Routes     │  │  auth:sanctum    │   │
+│  │ /api/logout│  │ /api/all   │  │ (CRUD)     │  │                  │   │
+│  │ /api/check │  │ /api/profile│  │ PUT/POST/  │  │  Token-based     │   │
+│  │ /api/change-│  │ /api/skills│  │ DELETE     │  │  authentication  │   │
+│  │ password   │  │ /api/sections│  │ per model  │  │                  │   │
+│  └────────────┘  └─────┬───────┘  └──────┬─────┘  └──────────────────┘   │
+│                        │                  │                               │
+│                        ▼                  ▼                               │
+│              ┌────────────────────────────────────┐                       │
+│              │         Controllers                │                       │
+│              │  ApiController  │  AuthController  │                       │
+│              └────────────────┬───────────────────┘                       │
+│                               │                                           │
+│                               ▼                                           │
+│              ┌────────────────────────────────────┐                       │
+│              │         Eloquent Models            │                       │
+│              │  Profile, Skill, Project, Section  │                       │
+│              │  Experience, Education, AITool...  │                       │
+│              └────────────────┬───────────────────┘                       │
+│                               │                                           │
+│                               ▼                                           │
+│              ┌────────────────────────────────────┐                       │
+│              │            MySQL Database          │                       │
+│              │    profiles │ skills │ sections    │                       │
+│              │    projects │ experiences │ ...    │                       │
+│              └────────────────────────────────────┘                       │
+└──────────────────────────────────────────────────────────────────────────┘
+```
 
-### Frontend
-- **React 18** — Component-based UI library
-- **Vite 4** — Frontend build tool
-- **React Router 6** — Client-side routing
-- **Axios** — HTTP client for API requests
+---
+
+## System Workflow
+
+```
+PUBLIC PORTFOLIO FLOW                    ADMIN PANEL FLOW
+══════════════════════                    ════════════════
+
+User opens site                        Admin navigates to /login
+        │                                        │
+        ▼                                        ▼
+  React SPA loads                     Login form (username/password)
+        │                                        │
+        ▼                                        ▼
+  GET /api/sections                    POST /api/login
+  (returns visible sections)              │
+        │                                ▼
+        ▼                         San token stored in
+  GET /api/all                     localStorage
+  (returns all content)                 │
+        │                                ▼
+        ▼                         Admin Panel renders
+  Render sections + nav           with auth header
+  menu items from                 on every request
+  sections data                         │
+        │                                ▼
+  Nav links auto-highlight         Admin Panel renders
+  via IntersectionObserver         with dynamic tabs
+  via IntersectionObserver         (hidden sections omitted)
+  on scroll                              │
+        │                                ▼
+        ▼                         CRUD via protected APIs
+  Dynamic portfolio               (auth:sanctum middleware)
+  with toggleable                 Sections drag-and-drop
+  dark/light mode                 Toast notifications (bottom-right)
+```
+
+---
+
+## Entity Relationship Diagram (ERD)
+
+```
+┌─────────────────────────┐       ┌─────────────────────────┐
+│         users           │       │        sections          │
+├─────────────────────────┤       ├─────────────────────────┤
+│ id (PK)                 │       │ id (PK)                 │
+│ name                    │       │ key (UNIQUE)            │
+│ username (UNIQUE)       │       │ label                   │
+│ email (UNIQUE)          │       │ is_visible (bool)       │
+│ password                │       │ order (int)             │
+│ remember_token          │       │ created_at              │
+│ timestamps              │       │ updated_at              │
+└─────────────────────────┘       └─────────────────────────┘
+
+┌─────────────────────────┐       ┌─────────────────────────┐
+│        profiles         │       │         skills          │
+├─────────────────────────┤       ├─────────────────────────┤
+│ id (PK)                 │       │ id (PK)                 │
+│ name, title, bio        │       │ name                    │
+│ email, phone, location  │       │ category                │
+│ avatar, github          │       │ level (int 1-6)         │
+│ linkedin, twitter       │       │ order (int)             │
+│ resume_url              │       │ timestamps              │
+│ years_experience        │       └─────────────────────────┘
+│ happy_clients           │
+│ timestamps              │       ┌─────────────────────────┐
+└─────────────────────────┘       │        projects         │
+                                  ├─────────────────────────┤
+┌─────────────────────────┐       │ id (PK)                 │
+│      experiences        │       │ title                   │
+├─────────────────────────┤       │ description             │
+│ id (PK)                 │       │ image, url, github      │
+│ company, position       │       │ order (int)             │
+│ start_date, end_date    │       │ is_visible (bool)       │
+│ is_current (bool)       │       │ timestamps              │
+│ description             │       └─────────────────────────┘
+│ order (int)             │
+│ timestamps              │       ┌─────────────────────────┐
+└─────────────────────────┘       │       education         │
+                                  ├─────────────────────────┤
+┌─────────────────────────┐       │ id (PK)                 │
+│      achievements       │       │ degree                  │
+├─────────────────────────┤       │ institution             │
+│ id (PK)                 │       │ result                  │
+│ title                   │       │ year                    │
+│ description             │       │ order (int)             │
+│ category                │       │ timestamps              │
+│ order (int)             │       └─────────────────────────┘
+│ timestamps              │
+└─────────────────────────┘       ┌─────────────────────────┐
+                                  │      ai_tools           │
+┌─────────────────────────┐       ├─────────────────────────┤
+│      leaderships        │       │ id (PK)                 │
+├─────────────────────────┤       │ name, description       │
+│ id (PK)                 │       │ url                     │
+│ title                   │       │ order (int)             │
+│ organization            │       │ timestamps              │
+│ description             │       └─────────────────────────┘
+│ order (int)             │
+│ timestamps              │       ┌─────────────────────────┐
+└─────────────────────────┘       │         ides            │
+                                  ├─────────────────────────┤
+┌─────────────────────────┐       │ id (PK)                 │
+│      publications       │       │ name, description       │
+├─────────────────────────┤       │ icon                    │
+│ id (PK)                 │       │ order (int)             │
+│ title, url              │       │ timestamps              │
+│ type                     │       └─────────────────────────┘
+│ order (int)             │
+│ timestamps              │       ┌─────────────────────────┐
+└─────────────────────────┘       │  personal_access_tokens │
+                                  ├─────────────────────────┤
+                                  │ id (PK)                 │
+                                  │ tokenable_type/id       │
+                                  │ name, token, abilities  │
+                                  │ last_used_at            │
+                                  │ timestamps              │
+                                  └─────────────────────────┘
+```
 
 ---
 
 ## Features
 
 ### Public Portfolio Page
-- Dark / Light mode toggle with persistent preference
-- Fully responsive design (mobile, tablet, desktop)
-- Animated sections with fade-in and slide-up transitions
-- Resume / CV download button
-- Dynamic content loaded from the API
+- **Dynamic sections** — toggle visibility and reorder from admin
+- **Smart navbar** — nav links auto-generated from visible content sections (hero/stats excluded as structural)
+- **Scroll-aware active state** — `IntersectionObserver` highlights the current section's nav link as you scroll
+- **Dark/Light mode** — persists preference in localStorage
+- **Responsive design** — mobile, tablet, desktop breakpoints
+- **Animated UI** — fade-in and slide-up transitions
+- **Download CV** — resume button in navbar
 
-### Sections
-| Section | Description |
-|---------|-------------|
-| Hero | Avatar, name, title, social links |
-| Stats | Years of experience, projects completed, happy clients |
-| Education | Degrees, institutions, results, years |
-| Skills | Categorized skills (Backend, Database, Frontend, DevOps) |
-| AI Tools | AI tools used with descriptions and links |
-| Projects | Featured work with images, descriptions, links |
-| Achievements | Awards and recognitions |
-| Leadership | Volunteer and leadership roles |
-| Publications | Published articles and profiles |
-| IDEs & Tools | Development tools used |
-| Contact | Contact form / information |
+### Portfolio Sections (configurable via admin)
+| Section Key | Description | Nav Link |
+|-------------|-------------|----------|
+| `hero` | Avatar, name, title, social links | — |
+| `stats` | Experience, project, client counters | — |
+| `education` | Degrees, institutions, results | ✓ |
+| `skills` | Categorized skill bars (Backend, Database, Frontend, DevOps) | ✓ |
+| `ai_tools` | AI tools with descriptions and links | ✓ |
+| `ides` | Development environments used daily | ✓ |
+| `projects` | Featured work with image, links | ✓ |
+| `achievements` | Awards and recognitions | ✓ |
+| `leadership` | Volunteer and leadership roles | ✓ |
+| `publications` | Published articles and profiles | ✓ |
+| `contact` | Email, phone, location | ✓ |
+
+> Hero and Stats are structural sections — they render on the page but never appear in the navbar menu. All other visible sections automatically generate a nav link. Hidden sections are hidden from both content and menu with a single toggle.
 
 ### Admin Panel
-- Full CRUD operations for all content types
-- Drag-and-drop image upload with gallery view
-- Paginated listing (10 items per page)
-- Server-side validation for file types and sizes
-- Real-time database persistence
+- **Authentication** — username/password login with Sanctum tokens
+- **Full CRUD** — create, read, update, delete for all content types
+- **Sections Manager** — drag-and-drop reorder, single visibility toggle (controls both page content + nav menu), add/delete custom sections
+- **Smart admin tabs** — tabs for content types with hidden sections (`is_visible = false`) are automatically removed from the tab bar
+- **Image Upload** — drag-and-drop with gallery viewer
+- **Change Password** — secure password update
+- **Toast notifications** — success/error messages appear as fixed toast at bottom-right corner with slide-up animation
+- **Paginated** — 10 items per page for all listings
+- **Validation** — server-side file type and size validation
 
 ---
 
@@ -76,109 +242,34 @@ A full-stack portfolio website with an admin content management system, built wi
 
 ---
 
-## Database Schema
-
-```
-┌─────────────────┐     ┌─────────────────┐
-│    profiles     │     │     skills      │
-├─────────────────┤     ├─────────────────┤
-│ id              │     │ id              │
-│ name            │     │ name            │
-│ title           │     │ category        │
-│ bio             │     │ level           │
-│ email           │     │ order           │
-│ phone           │     └─────────────────┘
-│ location        │
-│ avatar          │     ┌─────────────────┐
-│ github          │     │    projects      │
-│ linkedin        │     ├─────────────────┤
-│ twitter         │     │ id              │
-│ resume_url      │     │ title           │
-│ years_experience│     │ description     │
-│ happy_clients   │     │ image           │
-└─────────────────┘     │ url             │
-                        │ github          │
-┌─────────────────┐     │ order           │
-│  experiences    │     │ is_visible      │
-├─────────────────┤     └─────────────────┘
-│ id              │
-│ company         │     ┌─────────────────┐
-│ position        │     │   education      │
-│ start_date      │     ├─────────────────┤
-│ end_date        │     │ id              │
-│ is_current      │     │ degree          │
-│ description     │     │ institution     │
-│ order           │     │ result          │
-└─────────────────┘     │ year            │
-                        │ order           │
-┌─────────────────┐     └─────────────────┘
-│  achievements   │
-├─────────────────┤     ┌─────────────────┐
-│ id              │     │  leaderships    │
-│ title           │     ├─────────────────┤
-│ description     │     │ id              │
-│ category        │     │ title           │
-│ order           │     │ organization    │
-└─────────────────┘     │ description     │
-                        │ order           │
-┌─────────────────┐     └─────────────────┘
-│ publications    │
-├─────────────────┤     ┌─────────────────┐
-│ id              │     │    ai_tools     │
-│ title           │     ├─────────────────┤
-│ url             │     │ id              │
-│ type            │     │ name            │
-│ order           │     │ description     │
-└─────────────────┘     │ url             │
-                        │ order           │
-┌─────────────────┐     └─────────────────┘
-│      ides      │
-├─────────────────┤
-│ id              │
-│ name            │
-│ description     │
-│ icon            │
-│ order           │
-└─────────────────┘
-```
-
----
-
 ## Installation
 
 ### Prerequisites
-- PHP ^8.0
-- Composer
-- Node.js ^16
-- MySQL
+- **PHP** ^8.0
+- **Composer**
+- **Node.js** ^16
+- **MySQL** 5.7+
 
-### Step 1: Clone the Repository
+### Step-by-step Setup
+
 ```bash
+# 1. Clone the repository
 git clone https://github.com/moshiur1412/injaz-portfolio.git
 cd injaz-portfolio
-```
 
-### Step 2: Install PHP Dependencies
-```bash
+# 2. Install PHP dependencies
 composer install
-```
 
-### Step 3: Install Node.js Dependencies
-```bash
+# 3. Install Node.js dependencies
 npm install
-```
 
-### Step 4: Configure Environment
-```bash
+# 4. Create environment file
 cp .env.example .env
 ```
 
-Open `.env` and update the following values:
+Configure your database in `.env`:
 
 ```env
-APP_NAME=InjazPortfolio
-APP_URL=http://localhost:8000
-
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -187,142 +278,107 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Create the database in MySQL:
+Create the database:
+
 ```sql
 CREATE DATABASE injaz_portfolio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-### Step 5: Generate Application Key
 ```bash
+# 5. Generate application key
 php artisan key:generate
-```
 
-### Step 6: Run Migrations
-```bash
+# 6. Run migrations
 php artisan migrate
-```
 
-### Step 7: Seed the Database
-```bash
+# 7. Seed admin user and default sections
+php artisan db:seed
+
+# 8. Seed sample portfolio data
 php artisan db:seed --class=PortfolioSeeder
-```
 
-### Step 8: Create Storage Symlink
-```bash
+# 9. Create storage symlink
 php artisan storage:link
-```
 
-### Step 9: Build Frontend Assets
-```bash
+# 10. Build frontend
 npm run build
-```
 
-### Step 10: Start the Development Server
-```bash
+# 11. Start development server
 php artisan serve
 ```
 
-Visit **http://localhost:8000** for the public portfolio.
-Visit **http://localhost:8000/admin** for the admin panel.
+Visit **http://localhost:8000** for the public portfolio.  
+Visit **http://localhost:8000/login** for the admin panel.
+
+### Admin Credentials
+
+| Field | Value |
+|-------|-------|
+| Username | `admin` |
+| Password | `admin123` |
 
 ---
 
-## API Endpoints
+## API Reference
 
-### Portfolio Data
+### Public Endpoints
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/all` | Fetch all portfolio data in one request |
+| GET | `/api/all` | Fetch all portfolio data |
 | GET | `/api/profile` | Fetch profile information |
-| PUT | `/api/profile` | Update profile information |
-
-### Skills
-| Method | Endpoint | Description |
-|--------|----------|-------------|
 | GET | `/api/skills` | Fetch all skills |
-| POST | `/api/skills` | Create a new skill |
-| PUT | `/api/skills/{id}` | Update a skill |
-| DELETE | `/api/skills/{id}` | Delete a skill |
-
-### Projects
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/projects` | Fetch all projects |
-| POST | `/api/projects` | Create a new project |
-| PUT | `/api/projects/{id}` | Update a project |
-| DELETE | `/api/projects/{id}` | Delete a project |
-
-### Experiences
-| Method | Endpoint | Description |
-|--------|----------|-------------|
+| GET | `/api/projects` | Fetch visible projects |
 | GET | `/api/experiences` | Fetch all experiences |
-| POST | `/api/experiences` | Create a new experience |
-| PUT | `/api/experiences/{id}` | Update an experience |
-| DELETE | `/api/experiences/{id}` | Delete an experience |
+| GET | `/api/sections` | Fetch all sections with visibility and order |
 
-### Education
+### Authentication
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/educations` | Create a new education entry |
-| PUT | `/api/educations/{id}` | Update an education entry |
-| DELETE | `/api/educations/{id}` | Delete an education entry |
+| POST | `/api/login` | Login with username/password |
+| POST | `/api/logout` | Logout (auth required) |
+| GET | `/api/check` | Verify token validity |
+| PUT | `/api/change-password` | Change password (auth required) |
 
-### Achievements
+### Admin CRUD (all require `auth:sanctum`)
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/achievements` | Create a new achievement |
-| PUT | `/api/achievements/{id}` | Update an achievement |
-| DELETE | `/api/achievements/{id}` | Delete an achievement |
-
-### Leadership
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/leaderships` | Create a new leadership entry |
-| PUT | `/api/leaderships/{id}` | Update a leadership entry |
-| DELETE | `/api/leaderships/{id}` | Delete a leadership entry |
-
-### Publications
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/publications` | Create a new publication |
-| PUT | `/api/publications/{id}` | Update a publication |
-| DELETE | `/api/publications/{id}` | Delete a publication |
-
-### AI Tools
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/ai-tools` | Create a new AI tool entry |
-| PUT | `/api/ai-tools/{id}` | Update an AI tool entry |
-| DELETE | `/api/ai-tools/{id}` | Delete an AI tool entry |
-
-### IDEs
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/ides` | Create a new IDE entry |
-| PUT | `/api/ides/{id}` | Update an IDE entry |
-| DELETE | `/api/ides/{id}` | Delete an IDE entry |
-
-### Media
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/upload` | Upload an image |
-| GET | `/api/images` | Fetch all uploaded images |
-
----
-
-## Usage
-
-### Public Portfolio
-Navigate to **http://localhost:8000** to view the public-facing portfolio. All content is fetched dynamically from the API. Use the toggle in the navbar to switch between light and dark themes.
-
-### Admin Panel
-Navigate to **http://localhost:8000/admin** to access the content management interface. From here you can:
-- Update profile details (name, bio, social links, stats)
-- Manage skills with categories and proficiency levels
-- Add, edit, or remove projects
-- Manage work experiences, education, and achievements
-- Upload and browse images via the gallery
-- Reorder items using the `order` field
+| PUT | `/api/profile` | Update profile |
+| POST | `/api/skills` | Create skill |
+| PUT | `/api/skills/{id}` | Update skill |
+| DELETE | `/api/skills/{id}` | Delete skill |
+| POST | `/api/projects` | Create project |
+| PUT | `/api/projects/{id}` | Update project |
+| DELETE | `/api/projects/{id}` | Delete project |
+| POST | `/api/experiences` | Create experience |
+| PUT | `/api/experiences/{id}` | Update experience |
+| DELETE | `/api/experiences/{id}` | Delete experience |
+| POST | `/api/educations` | Create education |
+| PUT | `/api/educations/{id}` | Update education |
+| DELETE | `/api/educations/{id}` | Delete education |
+| POST | `/api/achievements` | Create achievement |
+| PUT | `/api/achievements/{id}` | Update achievement |
+| DELETE | `/api/achievements/{id}` | Delete achievement |
+| POST | `/api/leaderships` | Create leadership |
+| PUT | `/api/leaderships/{id}` | Update leadership |
+| DELETE | `/api/leaderships/{id}` | Delete leadership |
+| POST | `/api/publications` | Create publication |
+| PUT | `/api/publications/{id}` | Update publication |
+| DELETE | `/api/publications/{id}` | Delete publication |
+| POST | `/api/ai-tools` | Create AI tool |
+| PUT | `/api/ai-tools/{id}` | Update AI tool |
+| DELETE | `/api/ai-tools/{id}` | Delete AI tool |
+| POST | `/api/ides` | Create IDE entry |
+| PUT | `/api/ides/{id}` | Update IDE entry |
+| DELETE | `/api/ides/{id}` | Delete IDE entry |
+| POST | `/api/upload` | Upload image |
+| GET | `/api/images` | Fetch all images |
+| GET | `/api/sections/manage` | Get all sections |
+| PUT | `/api/sections/manage` | Bulk update sections |
+| POST | `/api/sections/manage` | Create new section |
+| DELETE | `/api/sections/manage/{id}` | Delete a section |
 
 ---
 
@@ -332,27 +388,30 @@ Navigate to **http://localhost:8000/admin** to access the content management int
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   └── ApiController.php    API controller with all CRUD methods
-│   │   └── Requests/               Form request validation classes
-│   └── Models/                     Eloquent models (Profile, Skill, Project, etc.)
+│   │   │   ├── ApiController.php      CRUD for all portfolio models
+│   │   │   └── AuthController.php     Login, logout, password, sections
+│   │   └── Requests/                  Form request validation
+│   └── Models/                        Eloquent models
 ├── database/
-│   ├── migrations/                 Table schemas
+│   ├── migrations/                    Schema definitions
 │   └── seeders/
-│       └── PortfolioSeeder.php     Sample data seeder
+│       ├── DatabaseSeeder.php         Seeds admin user + default sections
+│       └── PortfolioSeeder.php        Seeds sample portfolio content
 ├── resources/
 │   ├── js/
-│   │   ├── components/            Reusable React components
-│   │   ├── pages/                 Page-level components
-│   │   │   ├── Portfolio.jsx      Public portfolio page
-│   │   │   └── AdminPanel.jsx     Admin panel page
-│   │   ├── App.jsx                Root React component
-│   │   └── MainApp.jsx            Entry point with router setup
+│   │   ├── pages/
+│   │   │   ├── Home.jsx               Public portfolio page
+│   │   │   ├── Admin.jsx              Admin panel with all CRUD + settings
+│   │   │   └── Login.jsx              Admin login form
+│   │   ├── MainApp.jsx                Router + auth state management
+│   │   └── app.jsx                    React entry point
 │   └── css/
-│       └── app.css                Global styles with CSS variables
+│       └── app.css                    Global styles + admin theme
 ├── routes/
-│   └── api.php                    API route definitions
+│   ├── api.php                        API route definitions
+│   └── web.php                        Web routes (SPA catch-all)
 ├── public/
-│   └── build/                     Compiled Vite assets
+│   └── build/                         Compiled Vite assets
 ├── composer.json
 ├── package.json
 └── vite.config.js
@@ -360,20 +419,64 @@ Navigate to **http://localhost:8000/admin** to access the content management int
 
 ---
 
+## Usage
+
+### Admin Panel
+
+The admin panel provides full content management with tabbed navigation. Tabs for content types whose corresponding portfolio section is hidden are automatically removed.
+
+1. **Profile** — Update personal details, avatar, social links, stats *(always visible)*
+2. **Skills** — Manage skill names, categories, proficiency levels, order
+3. **Projects** — Add/edit/remove projects with images and links
+4. **Experiences** — Work history with dates and descriptions *(always visible)*
+5. **Education** — Degrees and certifications
+6. **Achievements** — Awards and recognitions
+7. **Leadership** — Volunteer and leadership roles
+8. **Publications** — Blog posts, profiles, and external links
+9. **AI Tools** — Tools used with descriptions
+10. **IDEs** — Development environments and tools
+11. **Sections** — Drag-and-drop reorder, single visibility toggle, add/delete custom portfolio sections *(always visible)*
+12. **Settings** — Change admin password *(always visible)*
+
+### Section Manager
+
+The Sections tab allows you to:
+- **Reorder** by dragging items up or down — order updates automatically
+- **Toggle visibility** — a single checkbox controls both the page content *and* the navbar menu link
+- **Edit labels** to customize section headings
+- **Add new sections** with a unique key and display label
+- **Delete** unwanted sections
+- Changes take effect immediately after saving
+
+> When a section is hidden: its content is removed from the portfolio page, its nav link disappears, and its corresponding admin tab is hidden. When toggled back on, everything reappears in the correct order. Hero and Stats are structural sections — they always render on the page but never appear in the nav menu.
+
+---
+
 ## Customization
 
-### Adding a New Content Section
-1. Create the migration: `php artisan make:migration create_{table}_table`
-2. Create the model: `app/Models/{ModelName}.php`
+### Adding a New Content Type
+1. Create migration: `php artisan make:migration create_{table}_table`
+2. Create model: `app/Models/{ModelName}.php`
 3. Add API routes in `routes/api.php`
-4. Add CRUD methods in `app/Http/Controllers/ApiController.php`
+4. Add CRUD methods in `ApiController.php`
 5. Create React components in `resources/js/pages/`
 6. Run `php artisan migrate` to apply the schema
 
 ### Styling
 - Edit `resources/css/app.css` for global styles
-- CSS custom properties (variables) control the color scheme
-- Dark mode is activated via the `[data-theme="dark"]` attribute on the root element
+- CSS custom properties control the color scheme
+- Dark mode uses `[data-theme="dark"]` attribute on `<html>`
+
+---
+
+## Security
+
+- All admin API routes are protected by `auth:sanctum` middleware
+- Authentication uses Laravel Sanctum token-based auth
+- Passwords are hashed with Bcrypt
+- Image upload validates file type (jpeg, png, jpg, gif, webp, svg) and size (max 2MB)
+- SQL injection prevention via Eloquent ORM and prepared statements
+- XSS protection via React's automatic output escaping
 
 ---
 
@@ -395,3 +498,4 @@ This project is for portfolio and learning purposes.
 - [Laravel](https://laravel.com)
 - [React](https://react.dev)
 - [Vite](https://vitejs.dev)
+- [Laravel Sanctum](https://laravel.com/docs/sanctum)

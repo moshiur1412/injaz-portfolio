@@ -1,17 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 function Home() {
     const [data, setData] = useState({ profile: null, skills: [], projects: [], experiences: [], educations: [], achievements: [], leaderships: [], publications: [], ai_tools: [], ides: [] });
+    const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [darkMode, setDarkMode] = useState(false);
+    const [activeSection, setActiveSection] = useState('');
+    const sectionRefs = useRef({});
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('darkMode');
         if (savedTheme) {
             setDarkMode(JSON.parse(savedTheme));
         }
-        fetchData();
+        Promise.all([
+            axios.get('/api/all'),
+            axios.get('/api/sections')
+        ]).then(([dataRes, sectionsRes]) => {
+            setData({
+                profile: dataRes.data.profile || null,
+                skills: dataRes.data.skills || [],
+                projects: dataRes.data.projects || [],
+                experiences: dataRes.data.experiences || [],
+                educations: dataRes.data.educations || [],
+                achievements: dataRes.data.achievements || [],
+                leaderships: dataRes.data.leaderships || [],
+                publications: dataRes.data.publications || [],
+                ai_tools: dataRes.data.ai_tools || [],
+                ides: dataRes.data.ides || []
+            });
+            setSections(sectionsRes.data || []);
+            setLoading(false);
+        }).catch(err => {
+            console.error(err);
+            setLoading(false);
+        });
     }, []);
 
     useEffect(() => {
@@ -19,30 +43,51 @@ function Home() {
         localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
-    const fetchData = () => {
-        axios.get('/api/all')
-            .then(res => {
-                setData({
-                    profile: res.data.profile || null,
-                    skills: res.data.skills || [],
-                    projects: res.data.projects || [],
-                    experiences: res.data.experiences || [],
-                    educations: res.data.educations || [],
-                    achievements: res.data.achievements || [],
-                    leaderships: res.data.leaderships || [],
-                    publications: res.data.publications || [],
-                    ai_tools: res.data.ai_tools || [],
-                    ides: res.data.ides || []
-                });
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
+    useEffect(() => {
+        if (loading) return;
+        const visibleMenuSections = sections.filter(s => s.is_visible && !isStructuralSection(s.key));
+        if (visibleMenuSections.length === 0) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
             });
-    };
+        }, { rootMargin: '-80px 0px -50% 0px', threshold: 0 });
+
+        visibleMenuSections.forEach(s => {
+            const el = document.getElementById(s.key);
+            if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+    }, [loading, sections]);
 
     const toggleDarkMode = () => setDarkMode(!darkMode);
+
+    const isVisible = (key) => {
+        const section = sections.find(s => s.key === key);
+        return section ? section.is_visible : true;
+    };
+
+    const getSectionLabel = (key) => {
+        const section = sections.find(s => s.key === key);
+        return section ? section.label : key;
+    };
+
+    const STRUCTURAL_SECTIONS = ['hero', 'stats'];
+
+    const isStructuralSection = (key) => STRUCTURAL_SECTIONS.includes(key);
+
+    const getMenuSections = () => {
+        return sections.filter(s => s.is_visible && !isStructuralSection(s.key)).sort((a, b) => a.order - b.order);
+    };
+
+    const scrollToSection = (key) => {
+        const el = document.getElementById(key);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    };
 
     const defaultIDEs = [
         { id: 1, name: 'VS Code', description: 'Primary code editor', icon: '💜' },
@@ -56,17 +101,26 @@ function Home() {
     if (loading) return <div className="loading">Loading...</div>;
 
     const { profile, skills, projects, experiences, educations, achievements, leaderships, publications, ai_tools, ides } = data;
+    const menuSections = getMenuSections();
 
     return (
         <div className="home-page">
             <nav className="main-nav">
                 <div className="container nav-container">
-                    <a href="#" className="nav-logo">{profile?.name?.split(' ')[0] || 'Portfolio'}</a>
+                    <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+                        {profile?.name?.split(' ')[0] || 'Portfolio'}
+                    </a>
                     <div className="nav-links">
-                        <a href="#about">About</a>
-                        <a href="#skills">Skills</a>
-                        <a href="#projects">Projects</a>
-                        <a href="#contact">Contact</a>
+                        {menuSections.map(s => (
+                            <a
+                                key={s.key}
+                                href={`#${s.key}`}
+                                className={`nav-link ${activeSection === s.key ? 'active' : ''}`}
+                                onClick={(e) => { e.preventDefault(); scrollToSection(s.key); }}
+                            >
+                                {s.label}
+                            </a>
+                        ))}
                         {profile?.resume_url && (
                             <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" className="btn-resume">
                                 Download CV
@@ -79,7 +133,7 @@ function Home() {
                 </div>
             </nav>
 
-            <section className="hero">
+            <section className="hero" id="hero">
                 <div className="hero-bg"></div>
                 <div className="container hero-content">
                     <div className="hero-text animate-fade-in">
@@ -88,8 +142,8 @@ function Home() {
                         <h2 className="hero-title">{profile?.title || 'Full Stack Developer'}</h2>
                         <p className="hero-bio">{profile?.bio || 'Building robust web solutions with clean, scalable code and infrastructure.'}</p>
                         <div className="hero-cta">
-                            <a href="#projects" className="btn btn-primary">View Work</a>
-                            <a href="#contact" className="btn btn-outline">Contact Me</a>
+                            <a href="#projects" className="btn btn-primary" onClick={(e) => { e.preventDefault(); scrollToSection('projects'); }}>View Work</a>
+                            <a href="#contact" className="btn btn-outline" onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}>Contact Me</a>
                         </div>
                         <div className="hero-social">
                             {profile?.github && <a href={profile.github} target="_blank" rel="noopener noreferrer" className="social-icon" title="GitHub">
@@ -116,7 +170,8 @@ function Home() {
                 </div>
             </section>
 
-            <section className="stats-section">
+            {isVisible('stats') && (
+            <section className="stats-section" id="stats">
                 <div className="container">
                     <div className="stats-grid">
                         <div className="stat-item animate-slide-up">
@@ -138,11 +193,12 @@ function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
-            {educations.length > 0 && (
-                <section className="section education-section" id="about">
+            {isVisible('education') && educations.length > 0 && (
+                <section className="section education-section" id="education">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Education & Certifications</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('education')}</h2>
                         <div className="education-grid">
                             {educations.map((edu, idx) => (
                                 <div key={edu.id} className="education-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
@@ -162,10 +218,10 @@ function Home() {
                 </section>
             )}
 
-            {achievements.length > 0 && (
-                <section className="section achievements-section">
+            {isVisible('achievements') && achievements.length > 0 && (
+                <section className="section achievements-section" id="achievements">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Achievements & Awards</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('achievements')}</h2>
                         <div className="achievements-grid">
                             {achievements.map((achievement, idx) => (
                                 <div key={achievement.id} className="achievement-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
@@ -179,10 +235,10 @@ function Home() {
                 </section>
             )}
 
-            {skills.length > 0 && (
+            {isVisible('skills') && skills.length > 0 && (
                 <section className="section skills-section" id="skills">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Technical Proficiency</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('skills')}</h2>
                         <p className="section-subtitle">A comprehensive overview of the tools and technologies I use.</p>
                         <div className="skills-categories">
                             {getSkillCategories(skills).map((category, idx) => (
@@ -208,10 +264,10 @@ function Home() {
                 </section>
             )}
 
-            {ai_tools.length > 0 && (
-                <section className="section ai-tools-section">
+            {isVisible('ai_tools') && ai_tools.length > 0 && (
+                <section className="section ai-tools-section" id="ai_tools">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">AI Tools I Use</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('ai_tools')}</h2>
                         <p className="section-subtitle">AI-powered tools that enhance my productivity.</p>
                         <div className="ai-tools-grid">
                             {ai_tools.map((tool, idx) => (
@@ -226,26 +282,28 @@ function Home() {
                 </section>
             )}
 
-            <section className="section ides-section">
-                <div className="container">
-                    <h2 className="section-title animate-fade-in">IDEs & Tools I Use</h2>
-                    <p className="section-subtitle">Development environments and tools I use daily.</p>
-                    <div className="ides-grid">
-                        {(ides.length > 0 ? ides : defaultIDEs).map((ide, idx) => (
-                            <div key={ide.id || idx} className="ide-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
-                                <span className="ide-icon">{ide.icon || '💻'}</span>
-                                <h3>{ide.name}</h3>
-                                <p>{ide.description}</p>
-                            </div>
-                        ))}
+            {isVisible('ides') && (
+                <section className="section ides-section" id="ides">
+                    <div className="container">
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('ides')}</h2>
+                        <p className="section-subtitle">Development environments and tools I use daily.</p>
+                        <div className="ides-grid">
+                            {(ides.length > 0 ? ides : defaultIDEs).map((ide, idx) => (
+                                <div key={ide.id || idx} className="ide-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
+                                    <span className="ide-icon">{ide.icon || '💻'}</span>
+                                    <h3>{ide.name}</h3>
+                                    <p>{ide.description}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
 
-            {projects.length > 0 && (
+            {isVisible('projects') && projects.length > 0 && (
                 <section className="section projects-section" id="projects">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Featured Projects</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('projects')}</h2>
                         <p className="section-subtitle">A small selection of my recent work.</p>
                         <div className="projects-grid">
                             {projects.map((project, idx) => (
@@ -278,10 +336,10 @@ function Home() {
                 </section>
             )}
 
-            {leaderships.length > 0 && (
-                <section className="section leadership-section">
+            {isVisible('leadership') && leaderships.length > 0 && (
+                <section className="section leadership-section" id="leadership">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Leadership & Volunteer Experience</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('leadership')}</h2>
                         <div className="leadership-grid">
                             {leaderships.map((item, idx) => (
                                 <div key={item.id} className="leadership-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
@@ -296,10 +354,10 @@ function Home() {
                 </section>
             )}
 
-            {publications.length > 0 && (
-                <section className="section publications-section">
+            {isVisible('publications') && publications.length > 0 && (
+                <section className="section publications-section" id="publications">
                     <div className="container">
-                        <h2 className="section-title animate-fade-in">Publications & Profiles</h2>
+                        <h2 className="section-title animate-fade-in">{getSectionLabel('publications')}</h2>
                         <div className="publications-grid">
                             {publications.map((pub, idx) => (
                                 <a key={pub.id} href={pub.url} target="_blank" rel="noopener noreferrer" className="publication-card animate-slide-up" style={{animationDelay: `${idx * 0.1}s`}}>
@@ -313,9 +371,10 @@ function Home() {
                 </section>
             )}
 
+            {isVisible('contact') && (
             <section className="section contact-section" id="contact">
                 <div className="container">
-                    <h2 className="section-title animate-fade-in">Let's Work Together</h2>
+                    <h2 className="section-title animate-fade-in">{getSectionLabel('contact')}</h2>
                     <p className="section-subtitle">Have a project in mind? I'm currently available for freelance work.</p>
                     <div className="contact-content">
                         <div className="contact-info">
@@ -350,6 +409,7 @@ function Home() {
                     </div>
                 </div>
             </section>
+            )}
 
             <footer className="footer">
                 <div className="container">
