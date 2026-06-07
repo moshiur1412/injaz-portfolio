@@ -23,7 +23,7 @@ class PortfolioSeeder extends Seeder
             [
                 'name' => 'Moshiur Rahman',
                 'title' => 'Senior Software Engineer',
-                'bio' => 'Architecting robust web solutions with precise code and scalable infrastructure. Specializing in Laravel, PHP, and Cloud Technologies. A passionate developer focused on clean architecture, test-driven development, and building solutions that drive business growth.',
+                'bio' => 'Building robust web solutions with clean, scalable code and infrastructure. Specializing in Laravel, PHP, and cloud technologies. A passionate developer focused on clean architecture, test-driven development, and creating solutions that drive business growth.',
                 'email' => 'moshiur@example.com',
                 'phone' => '+880 1XX XXXX XXXX',
                 'location' => 'Dhaka, Bangladesh',

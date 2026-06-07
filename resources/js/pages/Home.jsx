@@ -86,7 +86,7 @@ function Home() {
                         <p className="hero-greeting">Hello World! 👋</p>
                         <h1>{profile?.name || 'Your Name'}</h1>
                         <h2 className="hero-title">{profile?.title || 'Full Stack Developer'}</h2>
-                        <p className="hero-bio">{profile?.bio || 'Building robust web solutions with precise code and scalable infrastructure.'}</p>
+                        <p className="hero-bio">{profile?.bio || 'Building robust web solutions with clean, scalable code and infrastructure.'}</p>
                         <div className="hero-cta">
                             <a href="#projects" className="btn btn-primary">View Work</a>
                             <a href="#contact" className="btn btn-outline">Contact Me</a>
