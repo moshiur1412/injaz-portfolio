@@ -2,56 +2,56 @@
 
 A modern, production-ready portfolio website built with **Laravel** (backend API) and **React** (frontend). Features a beautiful public portfolio page and a full-featured admin panel for content management.
 
-![Portfolio Preview](https://via.placeholder.com/1200x600/667eea/ffffff?text=Portfolio+Website+Preview)
+![Portfolio Home Page](https://raw.githubusercontent.com/moshiur1412/injaz-portfolio/main/screenshorts/home_page_01.png)
 
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
 ### Backend
-- **Laravel 10** - PHP framework
-- **MySQL** - Database
-- **RESTful API** - JSON responses
+- **Laravel 10** — PHP framework
+- **MySQL** — Database
+- **RESTful API** — JSON responses
 
 ### Frontend
-- **React 18** - UI library
-- **Vite** - Build tool
-- **React Router** - Client-side routing
-- **Axios** - HTTP client
+- **React 18** — UI library
+- **Vite** — Build tool
+- **React Router** — Client-side routing
+- **Axios** — HTTP client
 
 ---
 
-## ✨ Features
+## Features
 
-### Public Portfolio Page
-- 🌙 **Dark/Light Mode** - Toggle between themes
-- 📱 **Responsive Design** - Works on all devices
-- ✨ **Animations** - Smooth fade-in and slide-up effects
-- 📄 **Download CV** - Resume download button in navbar
-
-### Sections
-- Hero with avatar and social links
-- Stats (Years Experience, Projects, Clients)
-- Education & Certifications
-- Achievements & Awards
-- Skills with categories (Backend, Database, Frontend, DevOps)
-- AI Tools I Use
-- Featured Projects
-- Leadership & Volunteer Experience
-- Publications & Profiles
-- IDEs & Tools
-- Contact Section
+### Public Portfolio
+- Dark/Light mode toggle
+- Fully responsive design
+- Smooth fade-in and slide-up animations
+- Download CV / resume button
+- Sections: Hero, Stats, Education, Skills, Projects, Achievements, Leadership, Publications, Contact
 
 ### Admin Panel
-- 📝 **Full CRUD** - Create, Read, Update, Delete for all content
-- 🖼️ **Image Upload** - Modern drag & drop with gallery
-- 📊 **Pagination** - 10 items per page
-- 💾 **Auto-save** - Changes persist to database
-- ✅ **Validation** - File type and size validation
+- Full CRUD for all portfolio content
+- Drag-and-drop image upload with gallery
+- Paginated views (10 items per page)
+- Persistent database storage
+- File type and size validation
 
 ---
 
-## 🏗️ Database Schema (ERD)
+## Screenshots
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Light Mode](https://raw.githubusercontent.com/moshiur1412/injaz-portfolio/main/screenshorts/home_page_02.png) | ![Dark Mode](https://raw.githubusercontent.com/moshiur1412/injaz-portfolio/main/screenshorts/home_page_03.png) |
+
+| Admin Panel |
+|-------------|
+| ![Admin Panel](https://raw.githubusercontent.com/moshiur1412/injaz-portfolio/main/screenshorts/home_page_04.png) |
+
+---
+
+## Database Schema (ERD)
 
 ```
 ┌─────────────────┐     ┌─────────────────┐
@@ -72,7 +72,7 @@ A modern, production-ready portfolio website built with **Laravel** (backend API
 │ years_exp       │     │ description      │
 │ happy_clients   │     │ image           │
 └─────────────────┘     │ url             │
-                       │ github          │
+                        │ github          │
 ┌─────────────────┐     │ order           │
 │  experiences    │     │ is_visible      │
 ├─────────────────┤     └─────────────────┘
@@ -85,7 +85,7 @@ A modern, production-ready portfolio website built with **Laravel** (backend API
 │ description     │     │ institution     │
 │ order           │     │ result          │
 └─────────────────┘     │ year            │
-                       │ order           │
+                        │ order           │
 ┌─────────────────┐     └─────────────────┘
 │  achievements   │
 ├─────────────────┤     ┌─────────────────┐
@@ -95,7 +95,7 @@ A modern, production-ready portfolio website built with **Laravel** (backend API
 │ category        │     │ title           │
 │ order           │     │ organization    │
 └─────────────────┘     │ description     │
-                       │ order           │
+                        │ order           │
 ┌─────────────────┐     └─────────────────┘
 │ publications    │
 ├─────────────────┤     ┌─────────────────┐
@@ -105,7 +105,7 @@ A modern, production-ready portfolio website built with **Laravel** (backend API
 │ type            │     │ name            │
 │ order           │     │ description     │
 └─────────────────┘     │ url             │
-                       │ order           │
+                        │ order           │
 ┌─────────────────┐     └─────────────────┘
 │      ides      │
 ├─────────────────┤
@@ -119,11 +119,11 @@ A modern, production-ready portfolio website built with **Laravel** (backend API
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/moshiur1412/injaz-portfolio.git
 cd injaz-portfolio
 ```
 
@@ -137,7 +137,7 @@ composer install
 npm install
 ```
 
-### 4. Environment Setup
+### 4. Environment setup
 ```bash
 cp .env.example .env
 ```
@@ -184,7 +184,7 @@ php artisan serve
 
 ---
 
-## 🔗 API Endpoints
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -204,63 +204,44 @@ php artisan serve
 
 ---
 
-## 📱 Usage
+## Usage
 
 ### Public Portfolio
 - **URL**: `http://localhost:8000/`
-- Features dark/light mode toggle
-- Responsive design for all devices
+- Dark/Light mode toggle
+- Responsive on all devices
 
 ### Admin Panel
 - **URL**: `http://localhost:8000/admin`
-- Manage all portfolio content
-- Upload images
+- Manage portfolio content
+- Upload and manage images
 - Edit profile information
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ├── app/
-│   ├── Http/Controllers/    # API Controllers
-│   └── Models/             # Eloquent Models
+│   ├── Http/Controllers/    API Controllers
+│   └── Models/              Eloquent Models
 ├── database/
-│   ├── migrations/         # Database Migrations
-│   └── seeders/           # Sample Data
+│   ├── migrations/          Database Migrations
+│   └── seeders/            Sample Data
 ├── resources/
-│   ├── js/                # React Components
-│   │   ├── pages/        # Page Components
-│   │   └── MainApp.jsx  # Main App
-│   └── css/               # Stylesheets
+│   ├── js/                 React Components
+│   │   ├── pages/         Page Components
+│   │   └── MainApp.jsx   Main App
+│   └── css/                Stylesheets
 ├── routes/
-│   └── api.php           # API Routes
+│   └── api.php            API Routes
 └── public/
-    └── build/            # Compiled Assets
+    └── build/             Compiled Assets
 ```
 
 ---
 
-## 🖼️ Screenshots
-
-### Portfolio Page (Light Mode)
-![Portfolio Light](https://via.placeholder.com/1200x600/667eea/ffffff?text=Portfolio+Light+Mode)
-
-### Portfolio Page (Dark Mode)
-![Portfolio Dark](https://via.placeholder.com/1200x600/1e293b/ffffff?text=Portfolio+Dark+Mode)
-
-### Admin Panel - Profile
-![Admin Profile](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Admin+Panel+Profile)
-
-### Admin Panel - Projects
-![Admin Projects](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Admin+Panel+Projects)
-
-### Admin Panel - Image Upload
-![Admin Upload](https://via.placeholder.com/1200x600/f8fafc/1e293b?text=Image+Upload+Feature)
-
----
-
-## 🔧 Customization
+## Customization
 
 ### Adding New Sections
 1. Create migration: `php artisan make:migration create_{table}_table`
@@ -272,26 +253,24 @@ php artisan serve
 
 ### Styling
 - Edit `resources/css/app.css` for custom styles
-- Use CSS variables for theming
+- CSS variables used for theming
 - Dark mode uses `[data-theme="dark"]` selector
 
 ---
 
-## 📄 License
+## License
 
 This project is for portfolio and learning purposes.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
-**Moshiur Rahman**
-- Full Stack Developer
-- Laravel & React Specialist
+**Moshiur Rahman** — Full Stack Developer (Laravel & React Specialist)
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - [Laravel](https://laravel.com)
 - [React](https://react.dev)
